@@ -8,9 +8,9 @@ from tbg.validator import Validator, ValidationResult
 @pytest.fixture
 def clean_graph():
     g = BeliefGraph()
-    g.add_node(EventNode(id="a", label="사건 A", era="1차 전쟁"))
-    g.add_node(EventNode(id="b", label="사건 B", era="2차 전쟁"))
-    g.add_node(EventNode(id="c", label="사건 C", era="3차 전쟁"))
+    g.add_node(EventNode(id="a", label="Event A", era="First War"))
+    g.add_node(EventNode(id="b", label="Event B", era="Second War"))
+    g.add_node(EventNode(id="c", label="Event C", era="Third War"))
     g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.9))
     g.add_edge(BeliefEdge(source_id="b", target_id="c", p_forward=0.8))
     return g
@@ -27,12 +27,12 @@ class TestValidationResult:
         assert r.is_valid is True
 
     def test_invalid_when_errors(self):
-        r = ValidationResult(errors=["오류1"])
+        r = ValidationResult(errors=["error one"])
         assert r.is_valid is False
 
     def test_raise_if_errors(self):
-        r = ValidationResult(errors=["심각한 오류"])
-        with pytest.raises(ValueError, match="심각한 오류"):
+        r = ValidationResult(errors=["critical error"])
+        with pytest.raises(ValueError, match="critical error"):
             r.raise_if_errors()
 
     def test_no_raise_when_valid(self):
@@ -55,17 +55,17 @@ class TestPseudoEra:
     def test_detects_pseudo_era(self, validator):
         g = BeliefGraph()
         node = EventNode(id="x", label="X")
-        node.era = "present"  # 새 schema 의 기본 pseudo era 는 영문
+        node.era = "present"
         g.add_node(node)
         result = validator.validate(g)
         assert not result.is_valid
         assert any("pseudo_era" in e for e in result.errors)
 
     def test_custom_pseudo_era(self, validator):
-        config = PriorConfig(pseudo_era_list=["태초에"])
+        config = PriorConfig(pseudo_era_list=["the beginning"])
         g = BeliefGraph(prior_config=config)
         node = EventNode(id="x", label="X")
-        node.era = "태초에"
+        node.era = "the beginning"
         g.add_node(node)
         result = validator.validate(g)
         assert not result.is_valid
@@ -87,8 +87,8 @@ class TestCycleDetection:
 
     def test_simple_cycle(self, validator):
         g = BeliefGraph()
-        g.add_node(EventNode(id="a", label="A", era="시대A"))
-        g.add_node(EventNode(id="b", label="B", era="시대B"))
+        g.add_node(EventNode(id="a", label="Event A", era="Age A"))
+        g.add_node(EventNode(id="b", label="Event B", era="Age B"))
         g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.9))
         g.add_edge(BeliefEdge(source_id="b", target_id="a", p_forward=0.9))
         result = validator.validate(g)
@@ -98,7 +98,7 @@ class TestCycleDetection:
     def test_three_node_cycle(self, validator):
         g = BeliefGraph()
         for nid in ["a", "b", "c"]:
-            g.add_node(EventNode(id=nid, label=nid, era=f"시대{nid}"))
+            g.add_node(EventNode(id=nid, label=f"Event {nid.upper()}", era=f"Age {nid.upper()}"))
         g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.9))
         g.add_edge(BeliefEdge(source_id="b", target_id="c", p_forward=0.9))
         g.add_edge(BeliefEdge(source_id="c", target_id="a", p_forward=0.9))
@@ -108,8 +108,8 @@ class TestCycleDetection:
 
     def test_uncertain_edge_ignored_in_cycle(self, validator):
         g = BeliefGraph()
-        g.add_node(EventNode(id="a", label="A", era="시대A"))
-        g.add_node(EventNode(id="b", label="B", era="시대B"))
+        g.add_node(EventNode(id="a", label="Event A", era="Age A"))
+        g.add_node(EventNode(id="b", label="Event B", era="Age B"))
         g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.9))
         g.add_edge(BeliefEdge(source_id="b", target_id="a", p_forward=0.4))
         result = validator.validate(g)
@@ -119,7 +119,7 @@ class TestCycleDetection:
 class TestIsolatedNodes:
     def test_isolated_node_warning(self, validator):
         g = BeliefGraph()
-        g.add_node(EventNode(id="alone", label="혼자", era="시대X"))
+        g.add_node(EventNode(id="alone", label="Alone Event", era="Age X"))
         result = validator.validate(g)
         assert result.is_valid
         assert any("isolated" in w for w in result.warnings)

@@ -169,6 +169,36 @@ tbg/
 
 ---
 
+## Development
+
+Install the package in editable mode with development dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+Run the test suite:
+
+```bash
+pytest
+```
+
+Run tests across all supported Python versions (requires [tox](https://tox.wiki/)):
+
+```bash
+tox
+```
+
+Build the package:
+
+```bash
+python -m build
+```
+
+> This package is currently in alpha. APIs may change before version 1.0.0.
+
+---
+
 ## Contributing
 
 Contributions, issues, and feature requests are welcome.  

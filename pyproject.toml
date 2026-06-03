@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "temporal-belief-graph"
-version = "0.1.0"
+version = "0.1.1"
 description = "Probabilistic temporal belief graph for uncertain narrative timelines."
 readme = "README.md"
 license = { text = "MIT" }
@@ -37,7 +37,7 @@ dependencies = []
 [project.urls]
 Homepage = "https://github.com/CHML-real/temporal-belief-graph"
 Repository = "https://github.com/CHML-real/temporal-belief-graph"
-Issues = "https://github.com/CHML-real/temporal-belief-graph"
+
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]

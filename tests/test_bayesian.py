@@ -8,8 +8,8 @@ from tbg.bayesian import Evidence, BayesianUpdater
 @pytest.fixture
 def graph():
     g = BeliefGraph()
-    g.add_node(EventNode(id="a", label="사건 A", era="1차 전쟁"))
-    g.add_node(EventNode(id="b", label="사건 B", era="2차 전쟁"))
+    g.add_node(EventNode(id="a", label="Event A", era="First War"))
+    g.add_node(EventNode(id="b", label="Event B", era="Second War"))
     g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.5))
     return g
 
@@ -73,15 +73,15 @@ class TestUpdateEdge:
         assert edge.evidence_history[0].prior_before == 0.5
 
     def test_weak_source_does_not_reverse_direction(self):
-        """약한 소스가 forward 를 지지하면 p_forward 는 반드시 올라야 한다 (log-odds 핵심 검증)"""
-        config = PriorConfig(source_weights={"weak": 0.1})
+        """A weak source supporting forward must still increase p_forward."""
+        config = PriorConfig(source_weights={"weak_source": 0.1})
         g = BeliefGraph(prior_config=config)
-        g.add_node(EventNode(id="a", label="A", era="시대A"))
-        g.add_node(EventNode(id="b", label="B", era="시대B"))
+        g.add_node(EventNode(id="a", label="Event A", era="Age A"))
+        g.add_node(EventNode(id="b", label="Event B", era="Age B"))
         g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.5))
-        ev = Evidence(key="ev1", supports_forward=True, strength=0.5, source="weak")
+        ev = Evidence(key="ev1", supports_forward=True, strength=0.5, source="weak_source")
         BayesianUpdater(g).update_edge("a", "b", ev)
-        assert g.get_edge("a", "b").p_forward > 0.5  # 방향이 뒤집히면 안 됨
+        assert g.get_edge("a", "b").p_forward > 0.5
 
     def test_clip_prevents_zero(self, graph, updater):
         for i in range(20):
@@ -102,8 +102,8 @@ class TestUpdateEdge:
         g1 = BeliefGraph(prior_config=config)
         g2 = BeliefGraph(prior_config=config)
         for g in [g1, g2]:
-            g.add_node(EventNode(id="a", label="A", era="시대A"))
-            g.add_node(EventNode(id="b", label="B", era="시대B"))
+            g.add_node(EventNode(id="a", label="Event A", era="Age A"))
+            g.add_node(EventNode(id="b", label="Event B", era="Age B"))
             g.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.5))
         ev_high = Evidence(key="ev1", supports_forward=True, strength=0.7, source="high_trust")
         ev_low  = Evidence(key="ev1", supports_forward=True, strength=0.7, source="low_trust")
@@ -116,8 +116,8 @@ class TestUpdateEdgeBatch:
     def test_batch_stronger_than_single(self, graph, updater):
         ev_single = Evidence(key="s1", supports_forward=True, strength=0.8)
         g2 = BeliefGraph()
-        g2.add_node(EventNode(id="a", label="A", era="시대A"))
-        g2.add_node(EventNode(id="b", label="B", era="시대B"))
+        g2.add_node(EventNode(id="a", label="Event A", era="Age A"))
+        g2.add_node(EventNode(id="b", label="Event B", era="Age B"))
         g2.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.5))
         u2 = BayesianUpdater(g2)
         updater.update_edge("a", "b", ev_single)
@@ -157,7 +157,6 @@ class TestEnsembleUpdate:
             updater.ensemble_update("a", "b", [])
 
     def test_invalid_claim_p_raises(self, graph, updater):
-        # 새 bayesian.py 는 "probability" 메시지 사용
         with pytest.raises(ValueError):
             updater.ensemble_update("a", "b", [(1.5, 1.0)])
 
@@ -169,8 +168,8 @@ class TestEnsembleUpdate:
         claims_high = [(0.9, 10.0), (0.1, 1.0)]
         claims_low  = [(0.9, 1.0),  (0.1, 10.0)]
         g2 = BeliefGraph()
-        g2.add_node(EventNode(id="a", label="A", era="시대A"))
-        g2.add_node(EventNode(id="b", label="B", era="시대B"))
+        g2.add_node(EventNode(id="a", label="Event A", era="Age A"))
+        g2.add_node(EventNode(id="b", label="Event B", era="Age B"))
         g2.add_edge(BeliefEdge(source_id="a", target_id="b", p_forward=0.5))
         updater.ensemble_update("a", "b", claims_high)
         BayesianUpdater(g2).ensemble_update("a", "b", claims_low)

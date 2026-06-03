@@ -5,30 +5,33 @@ from tbg.schema import EventNode, BeliefEdge, PriorConfig
 
 class TestEventNode:
     def test_normal(self):
-        n = EventNode(id="kain_incident", label="카인 사건", era="카인 사건 직후")
+        n = EventNode(id="kain_incident", label="Kain Incident", era="First Rift War")
         assert n.id == "kain_incident"
-        assert n.era == "카인 사건 직후"
+        assert n.era == "First Rift War"
 
     def test_empty_id_raises(self):
         with pytest.raises(ValueError, match="id"):
-            EventNode(id="", label="테스트")
+            EventNode(id="", label="Test Event")
 
     def test_empty_label_raises(self):
         with pytest.raises(ValueError, match="label"):
             EventNode(id="test", label="")
 
     def test_pseudo_era_not_blocked_in_schema(self):
-        # 새 schema 는 pseudo era 를 schema 단에서 막지 않고 validator 에서 처리
-        node = EventNode(id="x", label="x", era="present")
+        node = EventNode(id="x", label="X", era="present")
         assert node.era == "present"
 
     def test_no_era_is_allowed(self):
-        n = EventNode(id="x", label="x")
+        n = EventNode(id="x", label="X")
         assert n.era is None
 
     def test_sources_default_empty(self):
-        n = EventNode(id="x", label="x")
+        n = EventNode(id="x", label="X")
         assert n.sources == []
+
+    def test_unicode_labels_are_allowed(self):
+        node = EventNode(id="kain_incident", label="카인 사건", era="제1시대")
+        assert node.label == "카인 사건"
 
 
 class TestBeliefEdge:
@@ -70,18 +73,17 @@ class TestPriorConfig:
     def test_defaults(self):
         pc = PriorConfig()
         assert pc.default_p == 0.5
-        # 새 schema 는 영문 pseudo era 기본 목록 사용
         assert "present" in pc.all_pseudo_eras
         assert "past" in pc.all_pseudo_eras
 
     def test_custom_pseudo_era(self):
-        pc = PriorConfig(pseudo_era_list=["태초에"])
-        assert "태초에" in pc.all_pseudo_eras
-        assert "present" in pc.all_pseudo_eras  # 기본 목록도 유지
+        pc = PriorConfig(pseudo_era_list=["the beginning"])
+        assert "the beginning" in pc.all_pseudo_eras
+        assert "present" in pc.all_pseudo_eras
 
     def test_source_weights(self):
-        pc = PriorConfig(source_weights={"event_chain.json": 1.5})
-        assert pc.source_weights["event_chain.json"] == 1.5
+        pc = PriorConfig(source_weights={"official_lore": 1.5})
+        assert pc.source_weights["official_lore"] == 1.5
 
     def test_invalid_default_p(self):
         with pytest.raises(ValueError, match="default_p"):

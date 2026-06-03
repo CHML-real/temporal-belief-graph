@@ -7,20 +7,20 @@ from tbg.graph import BeliefGraph
 @pytest.fixture
 def graph():
     g = BeliefGraph()
-    g.add_node(EventNode(id="a", label="사건 A", era="1차 전쟁"))
-    g.add_node(EventNode(id="b", label="사건 B", era="2차 전쟁"))
-    g.add_node(EventNode(id="c", label="사건 C", era="3차 전쟁"))
+    g.add_node(EventNode(id="a", label="Event A", era="First War"))
+    g.add_node(EventNode(id="b", label="Event B", era="Second War"))
+    g.add_node(EventNode(id="c", label="Event C", era="Third War"))
     return g
 
 
 class TestNodes:
     def test_add_and_get(self, graph):
         node = graph.get_node("a")
-        assert node.label == "사건 A"
+        assert node.label == "Event A"
 
     def test_get_missing_raises(self, graph):
         with pytest.raises(KeyError):
-            graph.get_node("없는노드")
+            graph.get_node("missing_node")
 
     def test_nodes_list(self, graph):
         assert len(graph.nodes) == 3
@@ -35,8 +35,8 @@ class TestNodes:
         assert len(graph.edges) == 0
 
     def test_overwrite_node(self, graph):
-        graph.add_node(EventNode(id="a", label="수정된 사건 A", era="1차 전쟁"))
-        assert graph.get_node("a").label == "수정된 사건 A"
+        graph.add_node(EventNode(id="a", label="Event A Updated", era="First War"))
+        assert graph.get_node("a").label == "Event A Updated"
 
 
 class TestEdges:
@@ -46,13 +46,12 @@ class TestEdges:
         assert e.p_forward == 0.9
 
     def test_missing_source_raises(self, graph):
-        # 새 graph.py 는 "Source node" 메시지를 사용
         with pytest.raises(KeyError):
-            graph.add_edge(BeliefEdge(source_id="없음", target_id="b"))
+            graph.add_edge(BeliefEdge(source_id="missing", target_id="b"))
 
     def test_missing_target_raises(self, graph):
         with pytest.raises(KeyError):
-            graph.add_edge(BeliefEdge(source_id="a", target_id="없음"))
+            graph.add_edge(BeliefEdge(source_id="a", target_id="missing"))
 
     def test_remove_edge(self, graph):
         graph.add_edge(BeliefEdge(source_id="a", target_id="b"))
@@ -98,8 +97,8 @@ class TestInitUniform:
     def test_custom_prior_config(self):
         config = PriorConfig(default_p=0.7)
         g = BeliefGraph(prior_config=config)
-        g.add_node(EventNode(id="x", label="X", era="사건X"))
-        g.add_node(EventNode(id="y", label="Y", era="사건Y"))
+        g.add_node(EventNode(id="x", label="Event X", era="Age of X"))
+        g.add_node(EventNode(id="y", label="Event Y", era="Age of Y"))
         e = g.init_uniform("x", "y")
         assert e.p_forward == 0.7
 
