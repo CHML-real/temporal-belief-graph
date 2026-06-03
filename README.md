@@ -1,5 +1,10 @@
 # temporal-belief-graph
 
+[![PyPI version](https://badge.fury.io/py/temporal-belief-graph.svg)](https://pypi.org/project/temporal-belief-graph/)
+[![Python](https://img.shields.io/pypi/pyversions/temporal-belief-graph)](https://pypi.org/project/temporal-belief-graph/)
+[![Tests](https://github.com/CHML-real/temporal-belief-graph/actions/workflows/tests.yml/badge.svg)](https://github.com/CHML-real/temporal-belief-graph/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > A lightweight Python package for modeling **uncertain event orderings** in narrative timelines, lore databases, historical reconstructions, and worldbuilding systems.
 
 Instead of assuming every temporal relation is fixed, `temporal-belief-graph` represents event ordering as **probabilistic belief edges** and updates them as new evidence accumulates — using log-odds Bayesian updates that never reverse direction due to weak sources.
