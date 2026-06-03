@@ -38,10 +38,12 @@ Requires Python 3.10 or later. No external dependencies.
 ## Quick start
 
 ```python
-from tbg import BeliefGraph, EventNode, BeliefEdge, PriorConfig
+from tbg import BeliefGraph, EventNode, PriorConfig
 from tbg import BayesianUpdater, Evidence, Validator
+from tbg import graph_to_json, graph_from_json
+from tbg.report import graph_to_markdown, graph_to_mermaid
 
-# 1. Define a graph with initial config
+# 1. Configure the graph
 config = PriorConfig(
     default_p=0.5,
     source_weights={"official_lore": 1.5, "fan_wiki": 0.7},
@@ -52,12 +54,11 @@ graph = BeliefGraph(prior_config=config)
 graph.add_node(EventNode(id="kain_incident", label="Kain Incident", era="First Rift War"))
 graph.add_node(EventNode(id="rift_opening",  label="Rift Opening",  era="First Rift War"))
 
-# 3. Add an uncertain edge (default p=0.5 means we do not know the order yet)
+# 3. Add an uncertain edge (p=0.5 means order is unknown)
 graph.init_uniform("kain_incident", "rift_opening")
 
 # 4. Update belief with evidence
 updater = BayesianUpdater(graph)
-
 updater.update_edge(
     "kain_incident", "rift_opening",
     Evidence(key="official_001", supports_forward=True, strength=0.9, source="official_lore"),
@@ -77,7 +78,13 @@ print(updater.explain_edge("kain_incident", "rift_opening"))
 result = Validator().validate(graph)
 print(result.is_valid)
 print(result.warnings)
+
+# 7. Export
+graph_to_json(graph, "graph.json")
+print(graph_to_mermaid(graph))
 ```
+
+A full working example is available in [`examples/basic_usage.py`](examples/basic_usage.py).
 
 ---
 
@@ -146,6 +153,26 @@ result = Validator().validate(graph)
 result.raise_if_errors()   # raises ValueError if any errors exist
 ```
 
+### JSON export / import
+
+```python
+from tbg import graph_to_json, graph_from_json
+
+graph_to_json(graph, "graph.json")
+restored = graph_from_json("graph.json")
+```
+
+### Markdown and Mermaid report
+
+```python
+from tbg.report import graph_to_markdown, graph_to_mermaid, save_markdown, save_mermaid
+
+print(graph_to_markdown(graph))   # full Markdown report
+print(graph_to_mermaid(graph))    # Mermaid flowchart diagram
+save_markdown(graph, "report.md")
+save_mermaid(graph, "diagram.mmd")
+```
+
 ---
 
 ## Package structure
@@ -155,7 +182,15 @@ tbg/
 ├── schema.py      EventNode, BeliefEdge, EvidenceRecord, PriorConfig
 ├── graph.py       BeliefGraph
 ├── bayesian.py    BayesianUpdater, Evidence
-└── validator.py   Validator, ValidationResult
+├── validator.py   Validator, ValidationResult
+├── io.py          graph_to_json, graph_from_json
+└── report.py      graph_to_markdown, graph_to_mermaid
+
+examples/
+└── basic_usage.py End-to-end example
+
+docs/
+└── model.md       Mathematical model documentation
 ```
 
 ---
@@ -188,7 +223,7 @@ Run the test suite:
 pytest
 ```
 
-Run tests across all supported Python versions (requires [tox](https://tox.wiki/)):
+Run tests across all supported Python versions:
 
 ```bash
 tox
@@ -216,11 +251,11 @@ Please open an issue before submitting a pull request.
 | Handle | GitHub | Role |
 |--------|--------|------|
 | lajjadred | [@lajjadred](https://github.com/lajjadred) | Project lead |
-| Chae Mun Lee | [@CHML-real](https://github.com/CHML-real) | Mathematical algorithm development |
+| 이채문 | [@CHML-real](https://github.com/CHML-real) | Mathematical algorithm development |
 | CUBE | [@90cube](https://github.com/90cube) | Idea proposal and data collection |
 
 ---
 
 ## License
- 
+
 MIT License. See [LICENSE](LICENSE) for details.
